@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>You Are An Idiot: Smooth Chaos</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      overflow: hidden;
+    }
+    #msg {
+      position: absolute;
+      font-size: 40px;
+      font-weight: bold;
+      color: lime;
+      white-space: nowrap;
+    }
+    .error-box {
+      position: absolute;
+      width: 300px;
+      background: #f9f9f9;
+      border: 2px solid #900;
+      box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 14px;
+      color: #111;
+      padding: 10px;
+      z-index: 9999;
+      animation: pulse 0.5s infinite alternate;
+    }
+    @keyframes pulse {
+      from { opacity: 0.85; transform: scale(1); }
+      to { opacity: 1; transform: scale(1.02); }
+    }
+  </style>
+</head>
+<body>
+  <div id="msg">🤓YOU ARE AN IDIOT🤓</div>
+  <audio id="audio" src="idiot.mp3" autoplay loop></audio>
+
+  <script>
+    const msg = document.getElementById("msg");
+    const audio = document.getElementById("audio");
+    let x = 100, y = 100, dx = 6, dy = 6;
+    const popupSwarm = [];
+
+    function moveMain() {
+      x += dx;
+      y += dy;
+      if (x <= 0 || x + msg.offsetWidth >= window.innerWidth) dx *= -1;
+      if (y <= 0 || y + msg.offsetHeight >= window.innerHeight) dy *= -1;
+      msg.style.left = x + "px";
+      msg.style.top = y + "px";
+    }
+    setInterval(moveMain, 30);
+
+    function spawnSwarm() {
+      for (let i = 0; i < 6; i++) {
+        const px = Math.floor(Math.random() * screen.width);
+        const py = Math.floor(Math.random() * screen.height);
+        const features = `width=320,height=240,left=${px},top=${py}`;
+        const win = window.open("", "_blank", features);
+        if (win) {
+          win.document.body.style.margin = "0";
+          win.document.body.style.background = "black";
+          win.document.body.innerHTML = `
+            <img src="idiot.jpg" style="width:100%;height:auto;display:block;" />
+            <audio autoplay loop>
+              <source src="idiot.mp3" type="audio/mpeg" />
+            </audio>
+          `;
+          popupSwarm.push({ win });
+        }
+      }
+    }
+
+    // 💥 Nieuwe bewegingslogica: spring naar random positie
+    setInterval(() => {
+      popupSwarm.forEach(p => {
+        try {
+          const px = Math.floor(Math.random() * (screen.width - 320));
+          const py = Math.floor(Math.random() * (screen.height - 240));
+          p.win.moveTo(px, py);
+        } catch (e) {}
+      });
+    }, 500); // om de 0.5 seconde
+
+    function spawnFakeError() {
+      const error = document.createElement("div");
+      error.className = "error-box";
+      error.innerHTML = `
+        <strong>Browser error: 00000862524</strong><br>
+        Click some tabs away for a better browsing experience!<br>
+        <button onclick="this.parentElement.remove()" style="margin-top:8px;">OK</button>
+      `;
+      error.style.left = Math.random() * (window.innerWidth - 320) + "px";
+      error.style.top = Math.random() * (window.innerHeight - 180) + "px";
+      document.body.appendChild(error);
+    }
+
+    setInterval(() => {
+      const count = Math.floor(Math.random() * 2) + 1;
+      for (let i = 0; i < count; i++) spawnFakeError();
+    }, 2500);
+
+    spawnSwarm();
+    setInterval(spawnSwarm, 3000);
+  </script>
+</body>
+</html>
